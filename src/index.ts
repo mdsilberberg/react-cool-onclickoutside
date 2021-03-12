@@ -16,6 +16,7 @@ export interface Options {
   excludeScrollbar?: boolean;
   ignoreClass?: string;
   detectIFrame?: boolean;
+  customRoot?: El;
 }
 interface Return {
   (element: El | null): void;
@@ -48,6 +49,7 @@ const useOnclickOutside = (
     excludeScrollbar,
     ignoreClass = DEFAULT_IGNORE_CLASS,
     detectIFrame = true,
+    customRoot,
   }: Options = {}
 ): Return => {
   const callbackRef = useRef(callback);
@@ -65,6 +67,7 @@ const useOnclickOutside = (
   useEffect(
     () => {
       if (!refsOpt?.length && !refsState.length) return;
+      const rootElement = customRoot || document;
 
       const getEls = () => {
         const els: El[] = [];
@@ -99,7 +102,7 @@ const useOnclickOutside = (
       const removeEventListener = () => {
         eventTypes.forEach((type) =>
           // @ts-expect-error
-          document.removeEventListener(type, handler, getEventOptions(type))
+          rootElement.removeEventListener(type, handler, getEventOptions(type))
         );
 
         if (detectIFrame) window.removeEventListener("blur", blurHandler);
@@ -111,7 +114,7 @@ const useOnclickOutside = (
       }
 
       eventTypes.forEach((type) =>
-        document.addEventListener(type, handler, getEventOptions(type))
+        rootElement.addEventListener(type, handler, getEventOptions(type))
       );
 
       if (detectIFrame) window.addEventListener("blur", blurHandler);
@@ -126,6 +129,7 @@ const useOnclickOutside = (
       excludeScrollbar,
       disabled,
       detectIFrame,
+      customRoot,
       // eslint-disable-next-line react-hooks/exhaustive-deps
       JSON.stringify(eventTypes),
     ]
